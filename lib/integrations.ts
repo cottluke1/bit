@@ -64,10 +64,15 @@ async function uploadToDrive(
 
   try {
     const data = await blobToBase64(blob);
+    // keepalive lets this request finish even if the page is being
+    // unloaded (tab/browser closing) right as this fires — needed so a
+    // verification clip saved when someone exits mid-recording still
+    // makes it to Drive instead of getting cancelled with the page.
     const res = await fetch(GOOGLE_DRIVE_UPLOAD_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ filename, mimeType, data, type }),
+      keepalive: true,
     });
     const json = await res.json();
     console.log(`Uploaded ${type} to Drive:`, json);

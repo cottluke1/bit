@@ -52,6 +52,15 @@ export default function VerifyPage() {
     }
   }, []);
 
+  // Stops the recorder if it's still running — safe to call more than
+  // once (checks state first). Triggers recorder.onstop, which uploads
+  // whatever's been captured so far, however long that turns out to be.
+  const stopRecording = useCallback(() => {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  }, []);
+
   // Check permission once on mount; if the browser already granted camera
   // access on a previous visit, start the camera automatically.
   useEffect(() => {
@@ -74,14 +83,15 @@ export default function VerifyPage() {
     return () => {
       cancelled = true;
       streamRef.current?.getTracks().forEach((track) => track.stop());
-      if (recorderRef.current && recorderRef.current.state !== "inactive") {
-        recorderRef.current.stop();
-      }
+      stopRecording();
     };
-  }, [enableCamera]);
+  }, [enableCamera, stopRecording]);
 
   // Once the camera is on, require it to stay on for HOLD_SECONDS before
   // Continue unlocks, and record that window for the verification clip.
+  // `pagehide`/`visibilitychange` catch the visitor closing the tab or
+  // browser mid-recording — a plain React unmount cleanup doesn't reliably
+  // fire in that case, so without these the clip would just be lost.
   useEffect(() => {
     if (status !== "granted" || !streamRef.current) return;
 
@@ -106,12 +116,22 @@ export default function VerifyPage() {
           });
           sendVideoToDrive(blob);
         };
-        recorder.start();
+        // A 1s timeslice flushes chunks periodically instead of buffering
+        // everything until stop() — so even a couple of recorded seconds
+        // are already captured in chunksRef if the page closes abruptly.
+        recorder.start(1000);
         recorderRef.current = recorder;
       } catch (err) {
         console.error("Could not start verification recording:", err);
       }
     }
+
+    const handlePageHide = () => stopRecording();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") stopRecording();
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const interval = setInterval(() => {
       setSecondsLeft((s) => {
@@ -123,8 +143,15 @@ export default function VerifyPage() {
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [status]);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("pagehide", handlePageHide);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+    };
+  }, [status, stopRecording]);
 
   const verified = status === "granted" && secondsLeft <= 0;
 
@@ -133,9 +160,7 @@ export default function VerifyPage() {
   // length matches real usage instead of always being exactly HOLD_SECONDS,
   // and the upload fires immediately rather than waiting on later steps.
   const handleContinue = () => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
-      recorderRef.current.stop();
-    }
+    stopRecording();
     router.push("/location");
   };
 
