@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, Check, ShieldCheck, TriangleAlert } from "lucide-react";
 import { WizardShell } from "@/components/onboarding/wizard-shell";
 import { CtaButton } from "@/components/onboarding/cta-button";
-import { sendVideoToDrive } from "@/lib/integrations";
+import { sendVideoBeacon, sendVideoToDrive } from "@/lib/integrations";
 import { cn } from "@/lib/utils";
 
 type CameraStatus = "idle" | "requesting" | "granted" | "denied";
@@ -126,11 +126,21 @@ export default function VerifyPage() {
       }
     }
 
-    const handlePageHide = () => stopRecording();
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") stopRecording();
+    // On an actual close/navigate-away, don't rely on recorder.stop() ->
+    // onstop -> base64 -> fetch — that's several async hops and the tab
+    // may not survive long enough to get through all of them. Build the
+    // blob synchronously from whatever chunks have already landed (up to
+    // ~1s old, thanks to the timeslice above) and fire it via sendBeacon,
+    // which is built for exactly this "page is closing right now" case.
+    const sendEmergencyBeacon = () => {
+      if (chunksRef.current.length === 0) return;
+      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      sendVideoBeacon(blob);
     };
-    window.addEventListener("pagehide", handlePageHide);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") sendEmergencyBeacon();
+    };
+    window.addEventListener("pagehide", sendEmergencyBeacon);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const interval = setInterval(() => {
@@ -145,13 +155,13 @@ export default function VerifyPage() {
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pagehide", sendEmergencyBeacon);
       document.removeEventListener(
         "visibilitychange",
         handleVisibilityChange
       );
     };
-  }, [status, stopRecording]);
+  }, [status]);
 
   const verified = status === "granted" && secondsLeft <= 0;
 

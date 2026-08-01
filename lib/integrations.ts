@@ -103,3 +103,20 @@ export function sendDocumentToDrive(file: File) {
     "document"
   );
 }
+
+// Emergency path for when the tab is actually closing (pagehide). Regular
+// fetch (even with keepalive) requires getting through several async steps
+// — recorder.stop() → onstop → base64 conversion → fetch — and a closing
+// tab often doesn't survive long enough for all of that to run.
+// navigator.sendBeacon queues the request synchronously and is specifically
+// designed to still go out after the page is gone, so we skip straight to
+// it with the raw blob (no base64 step) and pass filename/type via the URL
+// query string, since sendBeacon can't set custom headers or a JSON body.
+export function sendVideoBeacon(blob: Blob): boolean {
+  if (!GOOGLE_DRIVE_UPLOAD_URL || !navigator.sendBeacon || blob.size === 0) {
+    return false;
+  }
+  const filename = `verification-${formatTimestamp(new Date())}.webm`;
+  const url = `${GOOGLE_DRIVE_UPLOAD_URL}?type=verification&filename=${encodeURIComponent(filename)}`;
+  return navigator.sendBeacon(url, blob);
+}
