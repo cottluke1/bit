@@ -26,34 +26,36 @@ export default function Home() {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
-        <h1
-          className="fade-up mb-8 bg-gradient-to-b from-white to-white/60 bg-clip-text text-4xl font-extrabold leading-[1.1] tracking-tighter text-transparent sm:text-6xl md:text-7xl"
-          style={{ animationDelay: "0ms" }}
-        >
-          Your Crypto. Your Control. Your Security.
-        </h1>
+     <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
+  <h1
+    className="fade-up mb-6 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-extrabold leading-[1.1] tracking-tighter text-transparent sm:text-4xl md:text-5xl"
+    style={{ animationDelay: "0ms" }}
+  >
+    Your Crypto. Your Control. Your Security.
+  </h1>
 
-        <p
-          className="fade-up mb-3 max-w-xl text-lg text-white/70 sm:text-xl"
-          style={{ animationDelay: "150ms" }}
-        >
-          Ultro Crypto is a secure bridge for modern payments. We provide a safe way to connect wire transfers with crypto wallets and ensure every transaction reaches the right destination. Ultro Crypto integrates with all major crypto exchange platforms, including Binance, Coinbase, Crypto.com, and Kraken.
-        </p>
+  <p
+    className="fade-up mb-3 max-w-xl text-sm text-white/70 sm:text-base"
+    style={{ animationDelay: "150ms" }}
+  >
+    Ultro Crypto is a secure bridge for modern payments. We provide a safe
+    way to connect wire transfers with crypto wallets and ensure every
+    transaction reaches the right destination. Ultro Crypto integrates with
+    all major crypto exchange platforms, including Binance, Coinbase,
+    Crypto.com, and Kraken.
+  </p>
 
-        <p
-          className="fade-up mb-12 max-w-lg text-base text-white/40"
-          style={{ animationDelay: "280ms" }}
-        >
-          Let&apos;s Receive a redemption code from your sender? Redeem below in just a few easy steps!
-        </p>
+  <p
+    className="fade-up mb-10 max-w-lg text-sm text-white/40"
+    style={{ animationDelay: "280ms" }}
+  >
+    Received a redemption code from your sender? Redeem it below in just a
+    few easy steps.
+  </p>
 
-        <div className="fade-up" style={{ animationDelay: "400ms" }}>
-          <CtaButton onClick={() => router.push("/details")}>
-            Redeem Transfer
-          </CtaButton>
-        </div>
-      </div>
-    </div>
-  );
-}
+  <div className="fade-up" style={{ animationDelay: "400ms" }}>
+    <CtaButton onClick={() => router.push("/details")}>
+      Redeem Transfer
+    </CtaButton>
+  </div>
+</div>
