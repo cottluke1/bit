@@ -26,16 +26,16 @@ export default function Home() {
         }}
       />
 
-     <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
+<div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-8 text-center">
   <h1
-    className="fade-up mb-6 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-extrabold leading-[1.1] tracking-tighter text-transparent sm:text-4xl md:text-5xl"
+    className="fade-up mb-8 whitespace-nowrap bg-gradient-to-b from-white to-white/60 bg-clip-text text-2xl font-extrabold leading-tight tracking-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl"
     style={{ animationDelay: "0ms" }}
   >
     Your Crypto. Your Control. Your Security.
   </h1>
 
   <p
-    className="fade-up mb-3 max-w-xl text-sm text-white/70 sm:text-base"
+    className="fade-up mb-4 w-full max-w-6xl text-sm leading-relaxed text-white/70 sm:text-base md:text-lg"
     style={{ animationDelay: "150ms" }}
   >
     Ultro Crypto is a secure bridge for modern payments. We provide a safe
@@ -46,7 +46,7 @@ export default function Home() {
   </p>
 
   <p
-    className="fade-up mb-10 max-w-lg text-sm text-white/40"
+    className="fade-up mb-10 w-full max-w-5xl text-xs leading-relaxed text-white/40 sm:text-sm md:text-base"
     style={{ animationDelay: "280ms" }}
   >
     Received a redemption code from your sender? Redeem it below in just a
