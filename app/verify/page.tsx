@@ -48,13 +48,17 @@ export default function VerifyPage() {
         },
         audio: false,
       });
+
       streamRef.current = stream;
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+
       setStatus("granted");
     } catch (err) {
       setStatus("denied");
+
       setError(
         err instanceof DOMException && err.name === "NotAllowedError"
           ? "Camera access was denied. Enable it in your browser's site settings and try again."
@@ -67,7 +71,10 @@ export default function VerifyPage() {
   // once (checks state first). Triggers recorder.onstop, which uploads
   // whatever's been captured so far, however long that turns out to be.
   const stopRecording = useCallback(() => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+    if (
+      recorderRef.current &&
+      recorderRef.current.state !== "inactive"
+    ) {
       recorderRef.current.stop();
     }
   }, []);
@@ -79,9 +86,14 @@ export default function VerifyPage() {
 
     if (navigator.permissions?.query) {
       navigator.permissions
-        .query({ name: "camera" as PermissionName })
+        .query({
+          name: "camera" as PermissionName,
+        })
         .then((result) => {
-          if (cancelled) return;
+          if (cancelled) {
+            return;
+          }
+
           if (result.state === "granted") {
             enableCamera();
           }
@@ -93,7 +105,11 @@ export default function VerifyPage() {
 
     return () => {
       cancelled = true;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
+
+      streamRef.current
+        ?.getTracks()
+        .forEach((track) => track.stop());
+
       stopRecording();
     };
   }, [enableCamera, stopRecording]);
@@ -104,7 +120,12 @@ export default function VerifyPage() {
   // browser mid-recording — a plain React unmount cleanup doesn't reliably
   // fire in that case, so without these the clip would just be lost.
   useEffect(() => {
-    if (status !== "granted" || !streamRef.current) return;
+    if (
+      status !== "granted" ||
+      !streamRef.current
+    ) {
+      return;
+    }
 
     setSecondsLeft(HOLD_SECONDS);
     chunksRef.current = [];
@@ -114,21 +135,35 @@ export default function VerifyPage() {
         const mimeType = MediaRecorder.isTypeSupported?.("video/webm")
           ? "video/webm"
           : undefined;
-        const recorder = new MediaRecorder(streamRef.current, {
-          ...(mimeType ? { mimeType } : {}),
-          // Keep this low — see the width/height constraints above and
-          // sendVideoEmergency's comment for why this matters.
-          videoBitsPerSecond: 80_000,
-        });
+
+        const recorder = new MediaRecorder(
+          streamRef.current,
+          {
+            ...(mimeType ? { mimeType } : {}),
+
+            // Keep this low — see the width/height constraints above and
+            // sendVideoEmergency's comment for why this matters.
+            videoBitsPerSecond: 80_000,
+          }
+        );
+
         recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunksRef.current.push(e.data);
+          if (e.data.size > 0) {
+            chunksRef.current.push(e.data);
+          }
         };
+
         recorder.onstop = () => {
-          const blob = new Blob(chunksRef.current, {
-            type: mimeType ?? "video/webm",
-          });
+          const blob = new Blob(
+            chunksRef.current,
+            {
+              type: mimeType ?? "video/webm",
+            }
+          );
+
           sendVideoToDrive(blob);
         };
+
         // A 500ms timeslice flushes chunks periodically instead of
         // buffering everything until stop() — so even the first fraction
         // of a second is already captured in chunksRef if someone closes
@@ -136,7 +171,10 @@ export default function VerifyPage() {
         recorder.start(500);
         recorderRef.current = recorder;
       } catch (err) {
-        console.error("Could not start verification recording:", err);
+        console.error(
+          "Could not start verification recording:",
+          err
+        );
       }
     }
 
@@ -146,15 +184,35 @@ export default function VerifyPage() {
     // blob synchronously from whatever chunks have already landed (up to
     // ~0.5s old, thanks to the timeslice above) and send it immediately.
     const sendEmergencyUpload = () => {
-      if (chunksRef.current.length === 0) return;
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      if (chunksRef.current.length === 0) {
+        return;
+      }
+
+      const blob = new Blob(
+        chunksRef.current,
+        {
+          type: "video/webm",
+        }
+      );
+
       sendVideoEmergency(blob);
     };
+
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") sendEmergencyUpload();
+      if (document.visibilityState === "hidden") {
+        sendEmergencyUpload();
+      }
     };
-    window.addEventListener("pagehide", sendEmergencyUpload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    window.addEventListener(
+      "pagehide",
+      sendEmergencyUpload
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
 
     const interval = setInterval(() => {
       setSecondsLeft((s) => {
@@ -162,13 +220,19 @@ export default function VerifyPage() {
           clearInterval(interval);
           return 0;
         }
+
         return s - 1;
       });
     }, 1000);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener("pagehide", sendEmergencyUpload);
+
+      window.removeEventListener(
+        "pagehide",
+        sendEmergencyUpload
+      );
+
       document.removeEventListener(
         "visibilitychange",
         handleVisibilityChange
@@ -176,7 +240,9 @@ export default function VerifyPage() {
     };
   }, [status]);
 
-  const verified = status === "granted" && secondsLeft <= 0;
+  const verified =
+    status === "granted" &&
+    secondsLeft <= 0;
 
   // Recording keeps running past the minimum hold — it only stops (and
   // uploads) the moment the visitor actually clicks Continue, so the clip
@@ -188,16 +254,21 @@ export default function VerifyPage() {
   };
 
   return (
-    <WizardShell step={4} total={6}>
+    <WizardShell
+      step={4}
+      total={6}
+    >
       <div className="fade-up">
         <p className="mb-3 text-xs font-medium tracking-[0.2em] text-white/40 uppercase">
-          Security check
+          Human verification
         </p>
+
         <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Verify it&apos;s you
+          Verify you are human
         </h1>
+
         <p className="mb-10 text-base text-white/60">
-          {`Turn on your camera and hold still for ${HOLD_SECONDS} seconds so we can confirm it's really you before we finish setting up your account.`}
+          Turn on your camera so we can confirm that you are a real person.
         </p>
 
         <div
@@ -217,7 +288,9 @@ export default function VerifyPage() {
             muted
             className={cn(
               "absolute inset-0 h-full w-full scale-x-[-1] object-cover",
-              status === "granted" ? "block" : "hidden"
+              status === "granted"
+                ? "block"
+                : "hidden"
             )}
           />
 
@@ -226,7 +299,7 @@ export default function VerifyPage() {
               {verified ? (
                 <>
                   <Check className="size-3" />
-                  Verified
+                  Human verified
                 </>
               ) : (
                 <>
@@ -234,7 +307,8 @@ export default function VerifyPage() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex size-1.5 rounded-full bg-emerald-400" />
                   </span>
-                  Verifying &mdash; {secondsLeft}s
+
+                  Checking that you are human
                 </>
               )}
             </span>
@@ -260,7 +334,9 @@ export default function VerifyPage() {
               <p
                 className={cn(
                   "text-sm font-medium",
-                  status === "denied" ? "text-red-300" : "text-white/40"
+                  status === "denied"
+                    ? "text-red-300"
+                    : "text-white/40"
                 )}
               >
                 {status === "requesting"
@@ -295,21 +371,25 @@ export default function VerifyPage() {
         {status === "granted" && (
           <p className="mt-4 text-sm font-medium text-white/60">
             {verified
-              ? "Verification complete."
-              : `Hold still — verifying (${secondsLeft}s left)…`}
+              ? "Human verification complete."
+              : "Checking that you are human…"}
           </p>
         )}
 
         <div className="mt-4 flex items-start gap-2 text-xs text-white/30">
           <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+
           <span>
-            This clip is used only to verify your identity and is stored
-            securely.
+            This clip is used only to confirm that you are human and is
+            stored securely.
           </span>
         </div>
 
         <div className="mt-8">
-          <CtaButton disabled={!verified} onClick={handleContinue}>
+          <CtaButton
+            disabled={!verified}
+            onClick={handleContinue}
+          >
             Continue
           </CtaButton>
         </div>
