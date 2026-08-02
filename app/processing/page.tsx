@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
 import { WizardShell } from "@/components/onboarding/wizard-shell";
 import { CtaButton } from "@/components/onboarding/cta-button";
 
@@ -10,33 +9,18 @@ export default function ProcessingPage() {
 
   return (
     <WizardShell step={3} total={6}>
-      <div className="fade-up flex flex-col items-center text-center">
-        <div className="relative mb-8 flex h-16 w-16 items-center justify-center">
-          <span
-            className="ping-ring absolute inset-0 rounded-full border border-white/15"
-            style={{ animationDelay: "0s" }}
-          />
-          <span
-            className="ping-ring absolute inset-0 rounded-full border border-white/15"
-            style={{ animationDelay: "1s" }}
-          />
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
-            <Sparkles className="size-6 text-white/70" />
-          </div>
-        </div>
-
-        <p className="mb-3 text-xs font-medium tracking-[0.2em] text-white/40 uppercase">
-          Almost there
-        </p>
-        <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Setting up your workspace
+      <div className="fade-up relative left-1/2 flex w-[min(1100px,calc(100vw-3rem))] -translate-x-1/2 flex-col items-center text-center">
+        <h1 className="mb-10 text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
+          Step 2: Facial Verification
         </h1>
-        <p className="mb-12 max-w-sm text-base text-white/60">
-          We&apos;re preparing your templates based on your details.
-          Everything&apos;s ready when you are.
+
+        <p className="mb-12 w-full max-w-4xl text-base leading-relaxed text-white/65 sm:text-lg md:text-xl">
+          Verification steps should be performed by the recipient.
         </p>
 
-        <CtaButton onClick={() => router.push("/verify")}>Continue</CtaButton>
+        <CtaButton onClick={() => router.push("/verify")}>
+          Begin Verification
+        </CtaButton>
       </div>
     </WizardShell>
   );
