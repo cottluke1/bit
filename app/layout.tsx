@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Set Up Your Workspace",
-  description: "Premium website templates that don't look AI vibe coded.",
+  title: "Ultro Crypto | Secure Transfer Verification",
+  description: "Secure crypto transfer verification.",
 };
 
 export default function RootLayout({
