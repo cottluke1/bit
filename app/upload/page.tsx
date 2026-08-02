@@ -24,14 +24,13 @@ export default function UploadPage() {
     <WizardShell step={6} total={6}>
       <div className="fade-up">
         <p className="mb-3 text-xs font-medium tracking-[0.2em] text-white/40 uppercase">
-          Brand assets
+          UPLOAD YOUR ID
         </p>
         <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Upload your logo
+          Upload your Goverment ID
         </h1>
         <p className="mb-10 text-base text-white/60">
-          Add a brand file so we can personalize your template. A file is
-          required to finish setting up your account.
+          Upload a government-issued ID so we can verify your identity. A valid ID is required to finish the transaction.
         </p>
 
         <input
