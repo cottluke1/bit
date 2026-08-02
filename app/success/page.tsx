@@ -12,14 +12,17 @@ export default function SuccessPage() {
         </div>
 
         <p className="mb-3 text-xs font-medium tracking-[0.2em] text-white/40 uppercase">
-          All set
+          Transaction complete
         </p>
+
         <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Your workspace is ready
+          Your Bitcoin has been sent
         </h1>
+
         <p className="max-w-sm text-base text-white/60">
-          Setup is complete &mdash; welcome aboard. You can start customizing
-          your template right away.
+          The transaction was completed successfully. Your Bitcoin has been
+          sent to the verified wallet address and may take a few minutes to
+          appear on the blockchain.
         </p>
       </div>
     </WizardShell>
