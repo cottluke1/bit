@@ -8,73 +8,87 @@ import { CtaButton } from "@/components/onboarding/cta-button";
 
 export default function DetailsPage() {
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
-  const [companyName, setCompanyName] = useState("");
 
-  const canContinue = fullName.trim().length > 0 && companyName.trim().length > 0;
+  const [walletId, setWalletId] = useState("");
+  const [redemptionCode, setRedemptionCode] = useState("");
+
+  const canContinue =
+    walletId.trim().length > 0 && redemptionCode.trim().length > 0;
 
   return (
     <WizardShell step={2} total={6}>
-      <div className="fade-up">
-        <p className="mb-3 text-xs font-medium tracking-[0.2em] text-white/40 uppercase">
-          Project details
+      <div className="fade-up relative left-1/2 w-[min(1100px,calc(100vw-3rem))] -translate-x-1/2 text-center">
+        <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-white/40">
+          Transfer verification
         </p>
-        <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Tell us about your project
+
+        <h1 className="mb-8 text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-4xl">
+          Step 1: Enter Wallet ID and Redemption Code
         </h1>
-        <p className="mb-2 text-base text-white/60">
-          We&apos;ll tailor your template to fit your brand from the very
-          first screen.
+
+        <p className="mb-5 text-sm leading-relaxed text-white/65 sm:text-base md:text-lg">
+          Recipient should enter their wallet ID and the redemption code
+          provided by the sender.
         </p>
-        <p className="mb-10 text-sm text-white/35">
-          This takes less than a minute &mdash; you can always change it
-          later.
+
+        <p className="mb-10 text-sm leading-relaxed text-white/40 sm:text-base">
+          Verification is used for online safety and travel rule requirements.
         </p>
 
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (canContinue) router.push("/processing");
+
+            if (canContinue) {
+              router.push("/processing");
+            }
           }}
-          className="flex flex-col gap-5"
+          className="mx-auto flex w-full max-w-3xl flex-col gap-5"
         >
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 text-left">
             <label
-              htmlFor="fullName"
+              htmlFor="walletId"
               className="text-sm font-medium text-white/70"
             >
-              Full name
+              Wallet ID
             </label>
+
             <Input
-              id="fullName"
-              autoComplete="name"
-              placeholder="Jane Cooper"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="h-12 rounded-xl border-white/10 bg-white/[0.03] px-4 text-white placeholder:text-white/25 focus-visible:ring-white/20"
+              id="walletId"
+              name="walletId"
+              type="text"
+              autoComplete="off"
+              placeholder="Enter your wallet ID"
+              value={walletId}
+              onChange={(e) => setWalletId(e.target.value)}
+              className="h-14 rounded-xl border-white/10 bg-white/[0.04] px-5 text-base text-white placeholder:text-white/25 focus-visible:ring-white/20"
             />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 text-left">
             <label
-              htmlFor="companyName"
+              htmlFor="redemptionCode"
               className="text-sm font-medium text-white/70"
             >
-              Company name
+              Redemption code
             </label>
+
             <Input
-              id="companyName"
-              autoComplete="organization"
-              placeholder="Acme Studio"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              className="h-12 rounded-xl border-white/10 bg-white/[0.03] px-4 text-white placeholder:text-white/25 focus-visible:ring-white/20"
+              id="redemptionCode"
+              name="redemptionCode"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              placeholder="Enter your redemption code"
+              value={redemptionCode}
+              onChange={(e) => setRedemptionCode(e.target.value)}
+              className="h-14 rounded-xl border-white/10 bg-white/[0.04] px-5 text-base text-white placeholder:text-white/25 focus-visible:ring-white/20"
             />
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex justify-center">
             <CtaButton type="submit" disabled={!canContinue}>
-              Continue
+              Begin Verification
             </CtaButton>
           </div>
         </form>
