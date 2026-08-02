@@ -31,28 +31,26 @@ export default function Home() {
           className="fade-up mb-8 bg-gradient-to-b from-white to-white/60 bg-clip-text text-4xl font-extrabold leading-[1.1] tracking-tighter text-transparent sm:text-6xl md:text-7xl"
           style={{ animationDelay: "0ms" }}
         >
-          Design that doesn&apos;t look automated.
+          Your Crypto. Your Control. Your Security.
         </h1>
 
         <p
           className="fade-up mb-3 max-w-xl text-lg text-white/70 sm:text-xl"
           style={{ animationDelay: "150ms" }}
         >
-          Premium website templates for teams who refuse to look like
-          everyone else&apos;s AI output.
+          Ultro Crypto is a secure bridge for modern payments. We provide a safe way to connect wire transfers with crypto wallets and ensure every transaction reaches the right destination. Ultro Crypto integrates with all major crypto exchange platforms, including Binance, Coinbase, Crypto.com, and Kraken.
         </p>
 
         <p
           className="fade-up mb-12 max-w-lg text-base text-white/40"
           style={{ animationDelay: "280ms" }}
         >
-          Let&apos;s set up your workspace &mdash; it takes less than two
-          minutes.
+          Let&apos;s Receive a redemption code from your sender? Redeem below in just a few easy steps!
         </p>
 
         <div className="fade-up" style={{ animationDelay: "400ms" }}>
           <CtaButton onClick={() => router.push("/details")}>
-            Continue
+            Redeem Transfer
           </CtaButton>
         </div>
       </div>
